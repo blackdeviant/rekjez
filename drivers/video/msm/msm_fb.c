@@ -134,8 +134,6 @@ static int msm_fb_pan_idle(struct msm_fb_data_type *mfd);
 #define WAIT_DISP_OP_TIMEOUT (WAIT_FENCE_FIRST_TIMEOUT +\
         WAIT_FENCE_FINAL_TIMEOUT) * MDP_MAX_FENCE_FD
 #define MAX_TIMELINE_NAME_LEN 16
-static const u8 bl_max = 255;
-static const u8 bl_min = 0;
 int msm_fb_debugfs_file_index;
 struct dentry *msm_fb_debugfs_root;
 struct dentry *msm_fb_debugfs_file[MSM_FB_MAX_DBGFS];
@@ -340,10 +338,11 @@ int msm_fb_detect_client(const char *name)
 		if (!strncmp((char *)msm_fb_pdata->prim_panel_name,
 			name, len)) {
 			if (!strncmp((char *)msm_fb_pdata->prim_panel_name,
-				"hdmi_msm", len))
+				"hdmi_msm", len)) {
 				hdmi_prim_display = 1;
 				hdmi_prim_resolution =
 					msm_fb_pdata->ext_resolution;
+			}
 			return 0;
 		} else {
 			ret = -EPERM;
@@ -563,14 +562,6 @@ static int msm_fb_probe(struct platform_device *pdev)
 	vsync_cntrl.dev = mfd->fbi->dev;
 	mfd->panel_info.frame_count = 0;
 	mfd->bl_level = 0;
-	/* MM-KW-Logo-01+{ */
-	if (mfd->index == 0) {
-		/* MM-KW-Backlight-02+{ */
-		mfd->bl_level = bl_max;
-		/* MM-KW-Backlight-02-} */
-		unset_bl_level = mfd->bl_level;
-	}
-	/* MM-KW-Logo-01-} */
 	bl_scale = 1024;
 	bl_min_lvl = 255;
 #ifdef CONFIG_FB_MSM_OVERLAY

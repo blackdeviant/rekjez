@@ -98,7 +98,7 @@ struct cm36283_info {
     uint8_t slave_addr;
     
     uint8_t ps_close_thd_set;
-    uint8_t ps_away_thd_set;	
+    uint8_t ps_away_thd_set;    
     int current_level;
     uint16_t current_adc;
     
@@ -107,14 +107,14 @@ struct cm36283_info {
     
     uint16_t ls_cmd;
     uint8_t record_clear_int_fail;
-	struct regulator *vreg;
-	uint16_t top_tresh;
-	uint16_t bottom_tresh;
-	int suspend_flag;
-	int wakeup_flag;
+    struct regulator *vreg;
+    uint16_t top_tresh;
+    uint16_t bottom_tresh;
+    int suspend_flag;
+    int wakeup_flag;
 /*MTD-PERIPHERAL-CH-PS_conf00++[*/
 #ifdef LS_cal
-	struct cm36283_cali k_data;
+    struct cm36283_cali k_data;
 #endif
 /*MTD-PERIPHERAL-CH-PS_conf00++]*/
 };
@@ -151,9 +151,9 @@ static int I2C_RxData(uint16_t slaveAddr, uint8_t cmd, uint8_t *rxData, int leng
             .flags = I2C_M_RD,
             .len = length,
             .buf = rxData,
-        },		 
+        },       
     }; 
-    subaddr[0] = cmd;	
+    subaddr[0] = cmd;   
 
 
 
@@ -165,7 +165,7 @@ static int I2C_RxData(uint16_t slaveAddr, uint8_t cmd, uint8_t *rxData, int leng
         val = gpio_get_value(lpi->intr_pin);
         /*check intr GPIO when i2c error*/
         if (loop_i == 0 || loop_i == I2C_RETRY_COUNT -1)
-        	D("[PS][CM36283 error] %s, i2c err, slaveAddr 0x%x ISR gpio %d  = %d, record_init_fail %d \n",
+            D("[PS][CM36283 error] %s, i2c err, slaveAddr 0x%x ISR gpio %d  = %d, record_init_fail %d \n",
             __func__, slaveAddr, lpi->intr_pin, val, record_init_fail);
         
             msleep(10);
@@ -257,7 +257,7 @@ static int _cm36283_I2C_Write_Word(uint16_t SlaveAddress, uint8_t cmd, uint16_t 
     #endif
     buffer[0] = cmd;
     buffer[1] = (uint8_t)(data&0xff);
-    buffer[2] = (uint8_t)((data&0xff00)>>8);	
+    buffer[2] = (uint8_t)((data&0xff00)>>8);    
     
     ret = I2C_TxData(SlaveAddress, buffer, 3);
     if(ret < 0)
@@ -286,40 +286,40 @@ static int get_ls_adc_value(uint16_t *als_step, bool resume)
         "[LS][CM36283 error]%s: _cm36283_I2C_Read_Word fail\n",__func__);
         return -EIO;
     }
-	if(((*als_step)+50) > 0xFFFF)
-		lpi->top_tresh=0xFFFF;
-	else
-		lpi->top_tresh=(*als_step)+50;
+    if(((*als_step)+50) > 0xFFFF)
+        lpi->top_tresh=0xFFFF;
+    else
+        lpi->top_tresh=(*als_step)+50;
 
 /*PERI-AC-Zero_Lux-Checking-00+{*/
-	if((*als_step-50) < 0)
-	{
-		if(clearcount==0)
-		{
-			lpi->bottom_tresh=3;
-			clearcount++;
-		}
-		else
-		{
-			lpi->bottom_tresh=0;
-		}
-	}
-	else
-	{
-		clearcount=0;
-		lpi->bottom_tresh=(*als_step)-50;
-	}
+    if((*als_step-50) < 0)
+    {
+        if(clearcount==0)
+        {
+            lpi->bottom_tresh=3;
+            clearcount++;
+        }
+        else
+        {
+            lpi->bottom_tresh=0;
+        }
+    }
+    else
+    {
+        clearcount=0;
+        lpi->bottom_tresh=(*als_step)-50;
+    }
 /*PERI-AC-Zero_Lux-Checking-00+}*/
     
 /*MTD-PERIPHERAL-CH-PS_conf00++[*/
 #ifdef LS_cal
-	if(lpi->k_data.done_LS)
-    	{
-    		D("[LS][CM36283] %s: raw adc = 0x%x, ls_diff = %d\n",
+    if(lpi->k_data.done_LS)
+        {
+            D("[LS][CM36283] %s: raw adc = 0x%x, ls_diff = %d\n",
     __func__, (*als_step), lpi->ls_calibrate);
-    		*als_step=*als_step * (720+lpi->k_data.ls_diff)/720;
-    	}
-	D("[LS][CM36283] %s: steps = 0x%x\n",
+            *als_step=*als_step * (720+lpi->k_data.ls_diff)/720;
+        }
+    D("[LS][CM36283] %s: steps = 0x%x\n",
     __func__, (*als_step));
 #endif
 /*MTD-PERIPHERAL-CH-PS_conf00++]*/
@@ -330,12 +330,12 @@ static int get_ls_adc_value(uint16_t *als_step, bool resume)
         if (tmpResult > 0xFFFF)
             *als_step = 0xFFFF;
         else
-            *als_step = tmpResult;  			
+            *als_step = tmpResult;              
     }
     
     D("[LS][CM36283] %s: raw adc = 0x%x, ls_calibrate = %d\n",
     __func__, (*als_step), lpi->ls_calibrate);
-	*als_step=*als_step*100/12;
+    *als_step=*als_step*100/12;
     
     return ret;
 }
@@ -357,7 +357,7 @@ static int get_ps_adc_value(uint16_t *data)
     struct cm36283_info *lpi = lp_info;
     
     if (data == NULL)
-        return -EFAULT;	
+        return -EFAULT; 
     
     ret = _cm36283_I2C_Read_Word(lpi->slave_addr, PS_DATA, data);
     
@@ -467,48 +467,48 @@ static irqreturn_t cm36283_irq_handler(int irq, void *data)
 static int als_power(int enable)
 {
     int rc = 0;
-	struct cm36283_info *lpi = lp_info;
-	static struct regulator *vreg_L9;
-	//static bool power_on = false;
+    struct cm36283_info *lpi = lp_info;
+    static struct regulator *vreg_L9;
+    //static bool power_on = false;
 
-	printk(KERN_ALERT "[CM36283] Enter %s, on = %d\n", __func__, enable);
+    printk(KERN_ALERT "[CM36283] Enter %s, on = %d\n", __func__, enable);
 
-	/* Power off, Reset Pin pull LOW must before power source off */
+    /* Power off, Reset Pin pull LOW must before power source off */
 
-	if (lpi->vreg==NULL) {
-		vreg_L9 = regulator_get(&lpi->i2c_client->dev,
-				"cm36283_vdd");
-		if (IS_ERR(vreg_L9)) {
-			pr_err("[CM36283]could not get vreg_L9, rc = %ld\n",
-				PTR_ERR(vreg_L9));
-			return -ENODEV;
-		}
-		lpi->vreg=vreg_L9;
-	}
-	else
-		vreg_L9=lpi->vreg;
-	
+    if (lpi->vreg==NULL) {
+        vreg_L9 = regulator_get(&lpi->i2c_client->dev,
+                "cm36283_vdd");
+        if (IS_ERR(vreg_L9)) {
+            pr_err("[CM36283]could not get vreg_L9, rc = %ld\n",
+                PTR_ERR(vreg_L9));
+            return -ENODEV;
+        }
+        lpi->vreg=vreg_L9;
+    }
+    else
+        vreg_L9=lpi->vreg;
+    
 
-	if (enable) {
-		D("[CM36283] REGULATOR_SET_OPTIMUM_MODE\n");
-		rc = regulator_set_optimum_mode(vreg_L9, 195);
-		if (rc < 0) {
-			pr_err("[DISPLAY]set_optimum_mode vreg_L9 failed, rc=%d\n", rc);
-			return -EINVAL;
-		}
-	} else {
-		D("[CM36283] REGULATOR_DISABLE\n");
-		rc = regulator_set_optimum_mode(vreg_L9, 0);
-		if (rc < 0) {
-			pr_err("[CM36283]set_optimum_mode vreg_L9 failed, rc=%d\n", rc);
-			return -EINVAL;
-		}
-	}
-	return 0;
+    if (enable) {
+        D("[CM36283] REGULATOR_SET_OPTIMUM_MODE\n");
+        rc = regulator_set_optimum_mode(vreg_L9, 195);
+        if (rc < 0) {
+            pr_err("[DISPLAY]set_optimum_mode vreg_L9 failed, rc=%d\n", rc);
+            return -EINVAL;
+        }
+    } else {
+        D("[CM36283] REGULATOR_DISABLE\n");
+        rc = regulator_set_optimum_mode(vreg_L9, 0);
+        if (rc < 0) {
+            pr_err("[CM36283]set_optimum_mode vreg_L9 failed, rc=%d\n", rc);
+            return -EINVAL;
+        }
+    }
+    return 0;
 }
 
 static void ls_initial_cmd(struct cm36283_info *lpi)
-{	
+{   
     /*must disable l-sensor interrupt befrore IST create*//*disable ALS func*/
     lpi->ls_cmd &= CM36283_ALS_INT_MASK;
     lpi->ls_cmd |= CM36283_ALS_SD;
@@ -517,14 +517,14 @@ static void ls_initial_cmd(struct cm36283_info *lpi)
 
 static void psensor_initial_cmd(struct cm36283_info *lpi)
 {
-    /*must disable p-sensor interrupt befrore IST create*//*disable ALS func*/		
+    /*must disable p-sensor interrupt befrore IST create*//*disable ALS func*/      
     lpi->ps_conf1_val |= CM36283_PS_SD;
     lpi->ps_conf1_val &= CM36283_PS_INT_MASK;  
     _cm36283_I2C_Write_Word(lpi->slave_addr, PS_CONF1, lpi->ps_conf1_val);   
     _cm36283_I2C_Write_Word(lpi->slave_addr, PS_CONF3, lpi->ps_conf3_val);
     _cm36283_I2C_Write_Word(lpi->slave_addr, PS_THD, (lpi->ps_close_thd_set <<8)| lpi->ps_away_thd_set);
     
-    D("[PS][CM36283] %s, finish\n", __func__);	
+    D("[PS][CM36283] %s, finish\n", __func__);  
 }
 
 static int psensor_enable(struct cm36283_info *lpi)
@@ -591,7 +591,7 @@ static int psensor_release(struct inode *inode, struct file *file)
 }
 
 static long psensor_ioctl(struct file *file, unsigned int cmd,
-			unsigned long arg)
+            unsigned long arg)
 {
     int val=0,rc=0;
     struct cm36283_info *lpi = lp_info;
@@ -678,7 +678,7 @@ static int lightsensor_update_table(struct cm36283_info *lpi)
         * lpi->als_kadc / lpi->als_gadc ;
         if( tmpData[i] <= 0xFFFF )
         {
-            lpi->cali_table[i] = (uint16_t) tmpData[i];		
+            lpi->cali_table[i] = (uint16_t) tmpData[i];     
         }
         else
         {
@@ -755,7 +755,7 @@ static int lightsensor_release(struct inode *inode, struct file *file)
 }
 
 static long lightsensor_ioctl(struct file *file, unsigned int cmd,
-		unsigned long arg)
+        unsigned long arg)
 {
     int rc, val;
     struct cm36283_info *lpi = lp_info;
@@ -802,7 +802,7 @@ static struct miscdevice lightsensor_misc = {
 
 
 static ssize_t ps_adc_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
+            struct device_attribute *attr, char *buf)
 {
     uint16_t value;
     int ret;
@@ -815,13 +815,13 @@ static ssize_t ps_adc_show(struct device *dev,
     
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     ret = snprintf(buf,sizeof("ADC[0x%04X], ENABLE = %d, intr_pin = %d\n"), "ADC[0x%04X], ENABLE = %d, intr_pin = %d\n", value, lpi->ps_enable, intr_val);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
-	
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    
     return ret;
 }
 
 static ssize_t ps_value_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
+            struct device_attribute *attr, char *buf)
 {
     uint16_t value;
     int ret,val;
@@ -831,28 +831,28 @@ static ssize_t ps_value_show(struct device *dev,
     val = (value >= lpi->ps_close_thd_set) ? 0 : 1;
     
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
-	ret = snprintf(buf,sizeof("%d\n"), "%d\n", val);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    ret = snprintf(buf,sizeof("%d\n"), "%d\n", val);
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
     
     return ret;
 }
 
 static ssize_t ps_enable_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
+            struct device_attribute *attr, char *buf)
 {
     int ret;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     ret = snprintf(buf,sizeof("%d\n"), "%d\n",lpi->ps_enable);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
-	
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    
     return ret;
 }
 
 static ssize_t ps_enable_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     unsigned ps_en = simple_strtoul(buf, NULL, 10);
@@ -878,7 +878,7 @@ static ssize_t ps_enable_store(struct device *dev,
 
 unsigned PS_cmd_test_value;
 static ssize_t ps_parameters_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
+            struct device_attribute *attr, char *buf)
 {
     int ret;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
@@ -886,14 +886,14 @@ static ssize_t ps_parameters_show(struct device *dev,
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     ret = snprintf(buf,sizeof("PS_close_thd_set = 0x%x, PS_away_thd_set = 0x%x, PS_cmd_cmd:value = 0x%x\n"), "PS_close_thd_set = 0x%x, PS_away_thd_set = 0x%x, PS_cmd_cmd:value = 0x%x\n",
     lpi->ps_close_thd_set, lpi->ps_away_thd_set, PS_cmd_test_value);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
     
     return ret;
 }
 
 static ssize_t ps_parameters_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
 
     struct cm36283_info *lpi = dev_get_drvdata(dev);
@@ -905,7 +905,7 @@ static ssize_t ps_parameters_store(struct device *dev,
         token[i] = strsep((char **)&buf, " ");
     
     lpi->ps_close_thd_set = simple_strtoul(token[0], NULL, 16);
-    lpi->ps_away_thd_set = simple_strtoul(token[1], NULL, 16);	
+    lpi->ps_away_thd_set = simple_strtoul(token[1], NULL, 16);  
     PS_cmd_test_value = simple_strtoul(token[2], NULL, 16);
     printk(KERN_INFO
     "[PS][CM36283]Set PS_close_thd_set = 0x%x, PS_away_thd_set = 0x%x, PS_cmd_cmd:value = 0x%x\n",
@@ -919,103 +919,103 @@ static ssize_t ps_parameters_store(struct device *dev,
 
 
 static ssize_t ps_conf_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
+            struct device_attribute *attr, char *buf)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
-	return snprintf(buf,sizeof("PS_CONF1 = 0x%x, PS_CONF3 = 0x%x\n"), "PS_CONF1 = 0x%x, PS_CONF3 = 0x%x\n", lpi->ps_conf1_val, lpi->ps_conf3_val);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    return snprintf(buf,sizeof("PS_CONF1 = 0x%x, PS_CONF3 = 0x%x\n"), "PS_CONF1 = 0x%x, PS_CONF3 = 0x%x\n", lpi->ps_conf1_val, lpi->ps_conf3_val);
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
 }
 static ssize_t ps_conf_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     uint16_t code1, code2,force;/*MTD-PERIPHERAL-CH-PS_conf00++*/
     struct cm36283_info *lpi = dev_get_drvdata(dev);
-	char *token[10];
+    char *token[10];
     int i;
 
 /*MTD-PERIPHERAL-CH-PS_conf00++[*/
     for (i = 0; i < 3; i++)
         token[i] = strsep((char **)&buf, " ");
-	force = simple_strtoul(token[0], NULL, 16);
-	code1 = simple_strtoul(token[1], NULL, 16);
-	code2 = simple_strtoul(token[2], NULL, 16);
+    force = simple_strtoul(token[0], NULL, 16);
+    code1 = simple_strtoul(token[1], NULL, 16);
+    code2 = simple_strtoul(token[2], NULL, 16);
 
-	if((fih_get_product_phase() == PHASE_PQ) || force)
-	{
-    	D("[PS]%s: store value PS conf1 reg = 0x%x PS conf3 reg = 0x%x\n", __func__, code1, code2);
+    if((fih_get_product_phase() == PHASE_PQ) || force)
+    {
+        D("[PS]%s: store value PS conf1 reg = 0x%x PS conf3 reg = 0x%x\n", __func__, code1, code2);
     
-    	lpi->ps_conf1_val = code1;
-    	lpi->ps_conf3_val = code2;
+        lpi->ps_conf1_val = code1;
+        lpi->ps_conf3_val = code2;
     
-    	_cm36283_I2C_Write_Word(lpi->slave_addr, PS_CONF3, lpi->ps_conf3_val );  
-    	_cm36283_I2C_Write_Word(lpi->slave_addr, PS_CONF1, lpi->ps_conf1_val );
-	}
-	else
-		D("[PS]%s: store value PS not acceptable. force=%d\n", __func__, force);
+        _cm36283_I2C_Write_Word(lpi->slave_addr, PS_CONF3, lpi->ps_conf3_val );  
+        _cm36283_I2C_Write_Word(lpi->slave_addr, PS_CONF1, lpi->ps_conf1_val );
+    }
+    else
+        D("[PS]%s: store value PS not acceptable. force=%d\n", __func__, force);
 /*MTD-PERIPHERAL-CH-PS_conf00++]*/ 
     return count;
 }
 
 static ssize_t ps_thd_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
+            struct device_attribute *attr, char *buf)
 {
     int ret;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     ret = snprintf(buf,sizeof("ps_close_thd = 0x%x, ps_away_thd = 0x%x\n"), "ps_close_thd = 0x%x, ps_away_thd = 0x%x\n",lpi->ps_close_thd_set, lpi->ps_away_thd_set);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
-    return ret;	
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    return ret; 
 }
 /*MTD-PERIPHERAL-CH-PS_conf00++[*/
 static ssize_t ps_thd_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
-	char *token[10];
-	unsigned force,code,module_id;
+    char *token[10];
+    unsigned force,code,module_id;
     int i;
     for (i = 0; i < 3; i++)
         token[i] = strsep((char **)&buf, " ");
-	force = simple_strtol(token[0], NULL, 16);
-	module_id = simple_strtol(token[1], NULL, 16);
-	code = simple_strtol(token[2], NULL, 16);
+    force = simple_strtol(token[0], NULL, 16);
+    module_id = simple_strtol(token[1], NULL, 16);
+    code = simple_strtol(token[2], NULL, 16);
 
-	if(((fih_get_product_phase() == PHASE_PQ) && (module_id==2))|| (fih_get_product_phase() >= PHASE_TP2_MP) || force)
-	{
-    	D("[PS]%s: store value = 0x%x\n", __func__, code);
+    if(((fih_get_product_phase() == PHASE_PQ) && (module_id==2))|| (fih_get_product_phase() >= PHASE_TP2_MP) || force)
+    {
+        D("[PS]%s: store value = 0x%x\n", __func__, code);
     
-    	lpi->ps_away_thd_set = code &0xFF;
-    	lpi->ps_close_thd_set = (code &0xFF00)>>8;	
+        lpi->ps_away_thd_set = code &0xFF;
+        lpi->ps_close_thd_set = (code &0xFF00)>>8;  
 
-		_cm36283_I2C_Write_Word(lpi->slave_addr, PS_THD, (lpi->ps_close_thd_set <<8)| lpi->ps_away_thd_set);/*PERI-CH-PS_wake01++*/
-    	D("[PS]%s: ps_close_thd_set = 0x%x, ps_away_thd_set = 0x%x\n", __func__, lpi->ps_close_thd_set, lpi->ps_away_thd_set);
-	}
-	else
-		D("[PS]%s: Not support store PS_THD value\n", __func__);
+        _cm36283_I2C_Write_Word(lpi->slave_addr, PS_THD, (lpi->ps_close_thd_set <<8)| lpi->ps_away_thd_set);/*PERI-CH-PS_wake01++*/
+        D("[PS]%s: ps_close_thd_set = 0x%x, ps_away_thd_set = 0x%x\n", __func__, lpi->ps_close_thd_set, lpi->ps_away_thd_set);
+    }
+    else
+        D("[PS]%s: Not support store PS_THD value\n", __func__);
     
     return count;
 }
 /*MTD-PERIPHERAL-CH-PS_conf00++]*/
 
 static ssize_t ps_hw_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
+            struct device_attribute *attr, char *buf)
 {
     int ret = 0;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
-	ret = snprintf(buf,sizeof("PS1: reg = 0x%x, PS3: reg = 0x%x, ps_close_thd_set = 0x%x, ps_away_thd_set = 0x%x\n"), "PS1: reg = 0x%x, PS3: reg = 0x%x, ps_close_thd_set = 0x%x, ps_away_thd_set = 0x%x\n",
+    ret = snprintf(buf,sizeof("PS1: reg = 0x%x, PS3: reg = 0x%x, ps_close_thd_set = 0x%x, ps_away_thd_set = 0x%x\n"), "PS1: reg = 0x%x, PS3: reg = 0x%x, ps_close_thd_set = 0x%x, ps_away_thd_set = 0x%x\n",
         lpi->ps_conf1_val, lpi->ps_conf3_val, lpi->ps_close_thd_set, lpi->ps_away_thd_set);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
     
     return ret;
 }
 
 static ssize_t ls_adc_show(struct device *dev,
-				  struct device_attribute *attr, char *buf)
+                  struct device_attribute *attr, char *buf)
 {
     int ret;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
@@ -1024,34 +1024,34 @@ static ssize_t ls_adc_show(struct device *dev,
         __func__, lpi->current_adc, lpi->current_level);
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     ret = snprintf(buf,sizeof("%x\n"), "%x\n",lpi->current_adc);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
     
     return ret;
 }
 
 
 static ssize_t ls_enable_show(struct device *dev,
-				  struct device_attribute *attr, char *buf)
+                  struct device_attribute *attr, char *buf)
 {
     int ret = 0;
     struct cm36283_info *lpi = dev_get_drvdata(dev);;
     
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     ret = snprintf(buf,sizeof("%d\n"), "%d\n",lpi->als_enable);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
     
     return ret;
 }
 
 static ssize_t ls_enable_store(struct device *dev,
-				   struct device_attribute *attr,
-				   const char *buf, size_t count)
+                   struct device_attribute *attr,
+                   const char *buf, size_t count)
 {
     int ret = 0;
     uint16_t intFlag;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
 
-	unsigned ls_auto = simple_strtoul(buf, NULL, 16);
+    unsigned ls_auto = simple_strtoul(buf, NULL, 16);
     
     if (ls_auto != 0 && ls_auto != 1 && ls_auto != 147)
         return -EINVAL;
@@ -1080,25 +1080,25 @@ static ssize_t ls_enable_store(struct device *dev,
 
 
 static ssize_t ls_kadc_show(struct device *dev,
-				  struct device_attribute *attr, char *buf)
+                  struct device_attribute *attr, char *buf)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     int ret;
     
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
-	ret = snprintf(buf,sizeof("kadc = 0x%x"), "kadc = 0x%x",
+    ret = snprintf(buf,sizeof("kadc = 0x%x"), "kadc = 0x%x",
         lpi->als_kadc);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
     
     return ret;
 }
 
 static ssize_t ls_kadc_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
-	unsigned kadc_temp = simple_strtoul(buf, NULL, 10);
+    unsigned kadc_temp = simple_strtoul(buf, NULL, 10);
     
     mutex_lock(&als_get_adc_mutex);
     if(kadc_temp != 0)
@@ -1112,7 +1112,7 @@ static ssize_t ls_kadc_store(struct device *dev,
         else
         {
             printk(KERN_INFO "[LS]%s: als_gadc =0x%x wait to be set\n",__func__, lpi->als_gadc);
-        }		
+        }       
     }
     else
     {
@@ -1125,24 +1125,24 @@ static ssize_t ls_kadc_store(struct device *dev,
 
 
 static ssize_t ls_gadc_show(struct device *dev,
-				  struct device_attribute *attr, char *buf)
+                  struct device_attribute *attr, char *buf)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     int ret;
     
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     ret = snprintf(buf,sizeof("gadc = 0x%x\n"), "gadc = 0x%x\n", lpi->als_gadc);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
     
     return ret;
 }
 
 static ssize_t ls_gadc_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
-	unsigned gadc_temp = simple_strtoul(buf, NULL, 10);
+    unsigned gadc_temp = simple_strtoul(buf, NULL, 10);
     
     mutex_lock(&als_get_adc_mutex);
     if(gadc_temp != 0)
@@ -1156,7 +1156,7 @@ static ssize_t ls_gadc_store(struct device *dev,
         else
         {
             printk(KERN_INFO "[LS]%s: als_kadc =0x%x wait to be set\n",__func__, lpi->als_kadc);
-        }		
+        }       
     }
     else
     {
@@ -1168,27 +1168,27 @@ static ssize_t ls_gadc_store(struct device *dev,
 
 
 static ssize_t ls_thd_show(struct device *dev,
-			struct device_attribute *attr, char *buf)
+            struct device_attribute *attr, char *buf)
 {
-	struct cm36283_info *lpi = dev_get_drvdata(dev);
+    struct cm36283_info *lpi = dev_get_drvdata(dev);
     int ret;
-	ret = snprintf(buf,sizeof("ls_top_thd = 0x%x, ls_bot_thd = 0x%x\n"), "ls_top_thd = 0x%x, ls_bot_thd = 0x%x\n",lpi->top_tresh , lpi->bottom_tresh);
-	return ret;
+    ret = snprintf(buf,sizeof("ls_top_thd = 0x%x, ls_bot_thd = 0x%x\n"), "ls_top_thd = 0x%x, ls_bot_thd = 0x%x\n",lpi->top_tresh , lpi->bottom_tresh);
+    return ret;
 
 }
 
 static ssize_t ls_thd_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     unsigned code1, code2;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
-	char *token[10];
+    char *token[10];
     int i;
     for (i = 0; i < 2; i++)
         token[i] = strsep((char **)&buf, " ");
-	code1 = simple_strtoul(token[0], NULL, 16);
-	code2 = simple_strtoul(token[1], NULL, 16);
+    code1 = simple_strtoul(token[0], NULL, 16);
+    code2 = simple_strtoul(token[1], NULL, 16);
 
     
     D("[PS]%s: store value LS top thd reg = 0x%x LS bot thd reg reg = 0x%x\n", __func__, code1, code2);
@@ -1204,19 +1204,19 @@ static ssize_t ls_thd_store(struct device *dev,
 
 
 static ssize_t ls_conf_show(struct device *dev,
-				  struct device_attribute *attr, char *buf)
+                  struct device_attribute *attr, char *buf)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     return snprintf(buf,sizeof("ALS_CONF = %x\n"), "ALS_CONF = %x\n", lpi->ls_cmd);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
 }
 static ssize_t ls_conf_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     struct cm36283_info *lpi = lp_info;
-	unsigned value = simple_strtoul(buf, NULL, 16);
+    unsigned value = simple_strtoul(buf, NULL, 16);
     
     lpi->ls_cmd = value;
     printk(KERN_INFO "[LS]set ALS_CONF = %x\n", lpi->ls_cmd);
@@ -1228,58 +1228,58 @@ static ssize_t ls_conf_store(struct device *dev,
 /*MTD-PERIPHERAL-CH-PS_conf00++[*/
 #ifdef LS_cal
 static ssize_t ls_k_data_show(struct device *dev,
-				  struct device_attribute *attr, char *buf)
+                  struct device_attribute *attr, char *buf)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     return snprintf(buf,sizeof("ALS_DONE = %d ALS_diff=%d\n"), "ALS_DONE = %d ALS_diff=%d\n", lpi->k_data.done_LS,lpi->k_data.ls_diff);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
 }
 static ssize_t ls_k_data_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     long code1, code2;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
-	char *token[10];
+    char *token[10];
     int i;
     for (i = 0; i < 2; i++)
         token[i] = strsep((char **)&buf, " ");
-	code1 = simple_strtol(token[0], NULL, 10);
-	code2 = simple_strtol(token[1], NULL, 10);
+    code1 = simple_strtol(token[0], NULL, 10);
+    code2 = simple_strtol(token[1], NULL, 10);
     
     lpi->k_data.done_LS=code1;
-	lpi->k_data.ls_diff=code2;
+    lpi->k_data.ls_diff=code2;
     printk(KERN_INFO "[LS]ALS_DONE = %d ALS_diff=%d\n", lpi->k_data.done_LS,lpi->k_data.ls_diff);
     
     return count;
 }
 
 static ssize_t ps_k_data_show(struct device *dev,
-				  struct device_attribute *attr, char *buf)
+                  struct device_attribute *attr, char *buf)
 {
     struct cm36283_info *lpi = dev_get_drvdata(dev);
     /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
     return snprintf(buf,sizeof("PS_DONE = %d PS_top=%d PS_bot=%d\n"), "PS_DONE = %d PS_top=%d PS_bot=%d\n", lpi->k_data.done_PS,lpi->k_data.ps_top,lpi->k_data.ps_bot);
-	/*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
+    /*MTD-PERIPHERAL-CH-FIX_coverity00++]*/
 }
 static ssize_t ps_k_data_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
+                struct device_attribute *attr,
+                const char *buf, size_t count)
 {
     long code1, code2, code3;
     struct cm36283_info *lpi = dev_get_drvdata(dev);
-	char *token[10];
+    char *token[10];
     int i;
     for (i = 0; i < 3; i++)
         token[i] = strsep((char **)&buf, " ");
-	code1 = simple_strtol(token[0], NULL, 10);
-	code2 = simple_strtol(token[1], NULL, 10);
-	code3 = simple_strtol(token[2], NULL, 10);
+    code1 = simple_strtol(token[0], NULL, 10);
+    code2 = simple_strtol(token[1], NULL, 10);
+    code3 = simple_strtol(token[2], NULL, 10);
     lpi->k_data.done_PS=code1;
-	lpi->top_tresh=code2;
-	lpi->bottom_tresh=code3;
-	_cm36283_I2C_Write_Word(lpi->slave_addr, PS_THD, (lpi->ps_close_thd_set <<8)| lpi->ps_away_thd_set);
+    lpi->top_tresh=code2;
+    lpi->bottom_tresh=code3;
+    _cm36283_I2C_Write_Word(lpi->slave_addr, PS_THD, (lpi->ps_close_thd_set <<8)| lpi->ps_away_thd_set);
     printk(KERN_INFO "[PS]PS_DONE = %d PS_top=%d PS_bot=%d\n", lpi->k_data.done_PS,lpi->top_tresh,lpi->bottom_tresh);
     return count;
 }
@@ -1436,7 +1436,7 @@ static int initial_cm36283(struct cm36283_info *lpi)
     {
         if (record_init_fail == 0)
             record_init_fail = 1;
-        return -ENOMEM;/*If devices without cm36283 chip and did not probe driver*/	
+        return -ENOMEM;/*If devices without cm36283 chip and did not probe driver*/ 
     }
     
     return 0;
@@ -1528,30 +1528,30 @@ static void cm36283_late_resume(struct early_suspend *h)
 #ifdef CONFIG_PM
 static int cm36283_suspend(struct device *dev)
 {    
-	return 0;
+    return 0;
 }
 
 static int cm36283_resume(struct device *dev)
 {    
-	D("Done.");    
-	return 0;
+    D("Done.");    
+    return 0;
 }
 
 static int cm36283_suspend_noirq(struct device *dev)
 {    
-	return 0;
+    return 0;
 }
 
 static struct dev_pm_ops cm36283_pm_ops = {    
-	.suspend = cm36283_suspend,    
-	.resume  = cm36283_resume,    
-	.suspend_noirq = cm36283_suspend_noirq
+    .suspend = cm36283_suspend,    
+    .resume  = cm36283_resume,    
+    .suspend_noirq = cm36283_suspend_noirq
 };
-#endif	/* CONFIG_PM */
+#endif  /* CONFIG_PM */
 
 
 static int cm36283_probe(struct i2c_client *client,
-	const struct i2c_device_id *id)
+    const struct i2c_device_id *id)
 {
     int ret = 0;
     struct cm36283_info *lpi;
@@ -1588,17 +1588,17 @@ static int cm36283_probe(struct i2c_client *client,
 /*MTD-PERIPHERAL-CH-PS_conf00++[*/
 if(fih_get_product_phase() >= PHASE_TP2_MP)
 {
-	lpi->ps_away_thd_set = 0x2D;
-    lpi->ps_close_thd_set = 0x31;	
+    lpi->ps_away_thd_set = 0x2D;
+    lpi->ps_close_thd_set = 0x31;   
     lpi->ps_conf1_val = 0x4025;
 }
 else
 {
     lpi->ps_away_thd_set = pdata->ps_away_thd_set;
-    lpi->ps_close_thd_set = pdata->ps_close_thd_set;	
+    lpi->ps_close_thd_set = pdata->ps_close_thd_set;    
     lpi->ps_conf1_val = pdata->ps_conf1_val;
 }
-	lpi->ps_conf3_val = pdata->ps_conf3_val;
+    lpi->ps_conf3_val = pdata->ps_conf3_val;
 /*MTD-PERIPHERAL-CH-PS_conf00++]*/
     
     lpi->ls_cmd  = pdata->ls_cmd;
@@ -1641,11 +1641,11 @@ else
 
 /*MTD-PERIPHERAL-CH-PS_conf00++[*/
 #ifdef LS_cal
-	lpi->k_data.done_LS=0;
-	lpi->k_data.done_PS=0;
-	lpi->k_data.ls_diff=0;
-	lpi->k_data.ps_top=0;
-	lpi->k_data.ps_bot=0;
+    lpi->k_data.done_LS=0;
+    lpi->k_data.done_PS=0;
+    lpi->k_data.ls_diff=0;
+    lpi->k_data.ps_top=0;
+    lpi->k_data.ps_bot=0;
 #endif
 /*MTD-PERIPHERAL-CH-PS_conf00++]*/
   //SET LUX STEP FACTOR HERE
@@ -1733,7 +1733,7 @@ err_platform_data_null:
 static int control_and_report( struct cm36283_info *lpi, uint8_t mode, uint16_t param ) {
     int ret=0;
     uint16_t adc_value = 0;
-    uint16_t ps_data = 0;	
+    uint16_t ps_data = 0;   
     int val;
     
     mutex_lock(&CM36283_control_mutex);
@@ -1756,13 +1756,13 @@ static int control_and_report( struct cm36283_info *lpi, uint8_t mode, uint16_t 
         {
             lpi->ps_conf1_val &= CM36283_PS_SD_MASK;
             lpi->ps_conf1_val |= CM36283_PS_INT_IN_AND_OUT;
-			irq_set_irq_wake(lpi->irq, 1);/*PERI-CH-PS_wake00++*/
+            irq_set_irq_wake(lpi->irq, 1);/*PERI-CH-PS_wake00++*/
         }
         else
         {
             lpi->ps_conf1_val |= CM36283_PS_SD;
             lpi->ps_conf1_val &= CM36283_PS_INT_MASK;
-			irq_set_irq_wake(lpi->irq, 0);/*PERI-CH-PS_wake00++*/
+            irq_set_irq_wake(lpi->irq, 0);/*PERI-CH-PS_wake00++*/
         }
         _cm36283_I2C_Write_Word(lpi->slave_addr, PS_CONF1, lpi->ps_conf1_val);    
         lpi->ps_enable=param;
@@ -1810,8 +1810,8 @@ static int control_and_report( struct cm36283_info *lpi, uint8_t mode, uint16_t 
                     val = 0;
                 break;
                 /*MTD-PERIPHERAL-CH-FIX_coverity00++
-                		default:
-                		break;*/
+                        default:
+                        break;*/
             };
             D("[LS][CM3628] %s: val =%d, \n",__func__,val);
             input_report_abs(lpi->ps_input_dev, ABS_DISTANCE, val);      
@@ -1830,7 +1830,7 @@ static int control_and_report( struct cm36283_info *lpi, uint8_t mode, uint16_t 
             
             get_ls_adc_value(&adc_value, 0);
 
-#if 0			
+#if 0           
             /*MTD-PERIPHERAL-CH-FIX_coverity00++[*/
             if( lpi->ls_calibrate )
             {
@@ -1872,7 +1872,7 @@ static int control_and_report( struct cm36283_info *lpi, uint8_t mode, uint16_t 
             *(lpi->cali_table + (i - 1)) + 1,
             *(lpi->cali_table + i));*/
             ret = set_lsensor_range(lpi->bottom_tresh,lpi->top_tresh);
-			
+            
             lpi->ls_cmd |= CM36283_ALS_INT_EN;
             
             ret = _cm36283_I2C_Write_Word(lpi->slave_addr, ALS_CONF, lpi->ls_cmd);  
@@ -1888,7 +1888,7 @@ static int control_and_report( struct cm36283_info *lpi, uint8_t mode, uint16_t 
             lpi->current_level = level;*/
             lpi->current_adc = adc_value;
             /*input_report_abs(lpi->ls_input_dev, ABS_MISC, *(lpi->adc_table + level));*/
-			input_report_abs(lpi->ls_input_dev, ABS_MISC, lpi->current_adc);
+            input_report_abs(lpi->ls_input_dev, ABS_MISC, lpi->current_adc);
             input_sync(lpi->ls_input_dev);
         }
     }
@@ -1900,31 +1900,31 @@ static int control_and_report( struct cm36283_info *lpi, uint8_t mode, uint16_t 
 
 
 static const struct i2c_device_id cm36283_i2c_id[] = {
-	{CM36283_I2C_NAME, 0},
-	{}
+    {CM36283_I2C_NAME, 0},
+    {}
 };
 
 static struct i2c_driver cm36283_driver = {
-	.id_table = cm36283_i2c_id,
-	.probe = cm36283_probe,
-	//.remove = cm36283_remove,
-	.driver = {
-		.name = CM36283_I2C_NAME,
-		.owner = THIS_MODULE,
+    .id_table = cm36283_i2c_id,
+    .probe = cm36283_probe,
+    //.remove = cm36283_remove,
+    .driver = {
+        .name = CM36283_I2C_NAME,
+        .owner = THIS_MODULE,
 #ifdef CONFIG_PM        
-		.pm     = &cm36283_pm_ops,
+        .pm     = &cm36283_pm_ops,
 #endif
-	},
+    },
 };
 
 static int __init cm36283_init(void)
 {
-	return i2c_add_driver(&cm36283_driver);
+    return i2c_add_driver(&cm36283_driver);
 }
 
 static void __exit cm36283_exit(void)
 {
-	i2c_del_driver(&cm36283_driver);
+    i2c_del_driver(&cm36283_driver);
 }
 
 module_init(cm36283_init);
